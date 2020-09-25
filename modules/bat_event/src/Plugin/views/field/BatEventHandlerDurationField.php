@@ -56,9 +56,10 @@ class BatEventHandlerDurationField extends FieldPluginBase {
   }
 
   public function render(ResultRow $values) {
+    $timezone = new \DateTimeZone(drupal_get_user_timezone());
     $event = $this->getEntity($values);
 
-    $value = $event->getEndDate()->getTimestamp() - $event->getStartDate()->getTimestamp();
+    $value = $event->getEndDate()->setTimezone($timezone)->getTimestamp() - $event->getStartDate()->setTimezone($timezone)->getTimestamp();
 
     return $this->sanitizeValue($this->dateFormatter->formatInterval($value));
   }
