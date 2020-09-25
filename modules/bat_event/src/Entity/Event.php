@@ -19,6 +19,7 @@ use Drupal\bat_event\EventInterface;
 use Drupal\bat_unit\UnitInterface;
 use Drupal\user\UserInterface;
 use Drupal\user\EntityOwnerTrait;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 
 use Roomify\Bat\Calendar\Calendar;
 use Roomify\Bat\Store\DrupalDBStore;
@@ -149,7 +150,7 @@ class Event extends ContentEntityBase implements EventInterface {
    * {@inheritdoc}
    */
   public function getStartDate() {
-    $date = new \DateTime($this->get('event_dates')->value);
+    $date = new \DateTime($this->get('event_dates')->value, new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE));
     return $date;
   }
 
@@ -157,7 +158,7 @@ class Event extends ContentEntityBase implements EventInterface {
    * {@inheritdoc}
    */
   public function getEndDate() {
-    $date = new \DateTime($this->get('event_dates')->end_value);
+    $date = new \DateTime($this->get('event_dates')->end_value, new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE));
     return $date;
   }
 
@@ -165,8 +166,10 @@ class Event extends ContentEntityBase implements EventInterface {
    * {@inheritdoc}
    */
   public function setStartDate(\DateTime $date) {
+    $date_storage = clone $date;
+    $date_storage->setTimezone(new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE));
     $value = [
-      'value' => $date->format('Y-m-d\TH:i:00'),
+      'value' => $date_storage->format('Y-m-d\TH:i:00'),
       'end_value' => $this->getEndDate()->format('Y-m-d\TH:i:00'),
     ];
     $this->set('event_dates', $value);
@@ -176,9 +179,11 @@ class Event extends ContentEntityBase implements EventInterface {
    * {@inheritdoc}
    */
   public function setEndDate(\DateTime $date) {
+    $date_storage = clone $date;
+    $date_storage->setTimezone(new \DateTimeZone(DateTimeItemInterface::STORAGE_TIMEZONE));
     $value = [
       'value' => $this->getStartDate()->format('Y-m-d\TH:i:00'),
-      'end_value' => $date->format('Y-m-d\TH:i:00'),
+      'end_value' => $date_storage->format('Y-m-d\TH:i:00'),
     ];
     $this->set('event_dates', $value);
   }
